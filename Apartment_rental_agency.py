@@ -2,7 +2,7 @@ import sqlite3
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot("5224662237:AAHinmeM1NgsnRAqHIS1Vk55PzOgSwS0i_M")
+bot = telebot.TeleBot("")
 dates = []
 
 def Date_display():
