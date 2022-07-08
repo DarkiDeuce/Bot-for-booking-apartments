@@ -63,10 +63,8 @@ def choice(message):
 
         for Address in Address_list:
             markup.add(Address[0])
-        #Сюда ещё нужно добавить фотографии и информацию о квартирах. Фотографии загрузить в БД. Отправить фотографии командой: bot.send_message(message.chat.id, 'Имя переменной в которой будут лежать фотографии из БД'
-        #Добавление фотографии происходит по стандарту, через выборку  полей из таблицы, в переменную записываются через fetchall. Пример: bot.send_photo(message.chat.id, BiPhoto[0][0], caption="Получилось")
+            
         bot.send_message(message.chat.id, "Выберете адрес интересующей вас квартиры.", reply_markup=markup)
-
         bot.register_next_step_handler(message, booking)
 
     elif message.text == "Информация о квартирах.":
