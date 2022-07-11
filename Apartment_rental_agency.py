@@ -2,7 +2,7 @@ import sqlite3
 import telebot
 from telebot import types
 
-bot = telebot.TeleBot("")
+bot = telebot.TeleBot(" ")
 dates = []
 
 def Date_display():
@@ -31,12 +31,23 @@ def Date_display():
 
 def rent_or_answer_or_information():
     markup = types.ReplyKeyboardMarkup(row_width=2)
-    AnswerOnQuestions = types.KeyboardButton("Ответы на часто задаваемые вопросы.")
     BookApartaments = types.KeyboardButton("Забронировать квартиру.")
     Information_About_Apartments = types.KeyboardButton("Информация о квартирах.")
-    markup.add(AnswerOnQuestions, BookApartaments, Information_About_Apartments)
+    AnswerOnQuestions = types.KeyboardButton("Ответы на часто задаваемые вопросы.")
+    markup.add(Information_About_Apartments, BookApartaments, AnswerOnQuestions)
 
     return markup
+
+def mailing(message):
+    con = sqlite3.connect("Test.db")
+    cur = con.cursor()
+
+    cur.execute("SELECT id_user FROM Test")
+    all_id = cur.fetchall()
+    text_mailing = message.text
+
+    for i in all_id:
+        bot.send_message(i[0], text_mailing)
 
 def choice(message):
     con = sqlite3.connect("Information_Apartaments.db")
@@ -63,8 +74,10 @@ def choice(message):
 
         for Address in Address_list:
             markup.add(Address[0])
-            
+        #Сюда ещё нужно добавить фотографии и информацию о квартирах. Фотографии загрузить в БД. Отправить фотографии командой: bot.send_message(message.chat.id, 'Имя переменной в которой будут лежать фотографии из БД'
+        #Добавление фотографии происходит по стандарту, через выборку  полей из таблицы, в переменную записываются через fetchall. Пример: bot.send_photo(message.chat.id, BiPhoto[0][0], caption="Получилось")
         bot.send_message(message.chat.id, "Выберете адрес интересующей вас квартиры.", reply_markup=markup)
+
         bot.register_next_step_handler(message, booking)
 
     elif message.text == "Информация о квартирах.":
@@ -117,7 +130,6 @@ def booking(message):
     bot.register_next_step_handler(message, db_change)
 
 def db_change(message):
-
     con = sqlite3.connect("Information_Apartaments.db")
     cursor = con.cursor()
 
@@ -182,6 +194,9 @@ def question(message):
 
 @bot.message_handler(commands=["start"])
 def start(message):
+    con = sqlite3.connect("Test.db")
+    cur = con.cursor()
+
     Greetings = 'Вас привествует агенство по аредне недвижимости "Этажи".' \
                 '\n\nБронирование квартир производится по средствам данного бота и последующей отправки информации администратору. ' \
                 'Стоимость аренды квартир может меняться в зависимости от времени года и даты.' \
@@ -191,7 +206,20 @@ def start(message):
 
     bot.send_message(message.chat.id, text=Greetings, reply_markup=markup)
 
-    bot.register_next_step_handler(message, choice)
+    cur.execute("SELECT id_user FROM Test")
+    all_id = cur.fetchall()
+
+    if message.from_user.id in all_id[0]:
+        bot.register_next_step_handler(message, choice)
+    else:
+        cur.execute("INSERT INTO Test(id_user) VALUES (?)", [message.from_user.id])
+        bot.register_next_step_handler(message, choice)
+        con.commit()
+
+@bot.message_handler(commands=["mailing"])
+def Authorization(message):
+    if message.from_user.id == 520794257:
+        bot.send_message(520794257, "Введите текст рассылки.")
+        bot.register_next_step_handler(message, mailing)
 
 bot.polling(non_stop=True)
-
