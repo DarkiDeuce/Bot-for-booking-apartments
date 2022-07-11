@@ -39,7 +39,7 @@ def rent_or_answer_or_information():
     return markup
 
 def mailing(message):
-    con = sqlite3.connect("Test.db")
+    con = sqlite3.connect("id_user.db")
     cur = con.cursor()
 
     cur.execute("SELECT id_user FROM Test")
